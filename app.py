@@ -33,7 +33,7 @@ def add_product():
 
     return  { "message" : "Product added successfully" }
   
-  return jsonify({"message": "Invalid product data"}), 400
+  return jsonify({ "message": "Invalid product data" }), 400
 
 # remove product
 @app.route('/api/products/delete/<int:product_id>', methods=['DELETE'])
@@ -44,7 +44,7 @@ def delete_product(product_id):
     db.session.commit()
     return  { "message" : "Product deleted successfully" }
 
-  return jsonify({"message": "Product not founded"}), 404
+  return jsonify({ "message": "Product not found" }), 404
 
 @app.route("/")
 def hello_world():
