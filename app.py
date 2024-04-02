@@ -73,7 +73,7 @@ def add_product():
         db.session.add(product)
         db.session.commit()
 
-        return {'message': 'Product added successfully'}
+        return jsonify({'message': 'Product added successfully'})
 
     return jsonify({'message': 'Invalid product data'}), 400
 
@@ -86,7 +86,7 @@ def delete_product(product_id):
     if product:
         db.session.delete(product)
         db.session.commit()
-        return {'message': 'Product deleted successfully'}
+        return jsonify({'message': 'Product deleted successfully'})
 
     return jsonify({'message': 'Product not found'}), 404
 
