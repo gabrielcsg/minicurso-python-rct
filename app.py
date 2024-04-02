@@ -2,54 +2,112 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///ecommerce.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
 
 db = SQLAlchemy(app)
 
 # models
 
 # product
+
+
 class Product(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
-  name = db.Column(db.String(120), nullable=False)
-  price = db.Column(db.Float, nullable=False)
-  description = db.Column(db.Text)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    description = db.Column(db.Text)
 
 
 # define routes
-  
+
 # add product
 @app.route('/api/products/add', methods=['POST'])
 def add_product():
-  data = request.json
-  if ('name' in data and 'price' in data):
-    product = Product(
-      name=data['name'],
-      price=data['price'],
-      description=data.get('description', '') # default value
-    )
-    db.session.add(product)
-    db.session.commit()
+    data = request.json
+    if 'name' in data and 'price' in data:
+        product = Product(
+            name=data['name'],
+            price=data['price'],
+            description=data.get('description', '')  # default value
+        )
+        db.session.add(product)
+        db.session.commit()
 
-    return  { "message" : "Product added successfully" }
-  
-  return jsonify({ "message": "Invalid product data" }), 400
+        return {'message': 'Product added successfully'}
+
+    return jsonify({'message': 'Invalid product data'}), 400
 
 # remove product
+
+
 @app.route('/api/products/delete/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):
-  product = Product.query.get(product_id)
-  if (product):
-    db.session.delete(product)
+    product = Product.query.get(product_id)
+    if product:
+        db.session.delete(product)
+        db.session.commit()
+        return {'message': 'Product deleted successfully'}
+
+    return jsonify({'message': 'Product not found'}), 404
+
+# product details
+
+
+@app.route('/api/products/<int:product_id>', methods=['GET'])
+def get_product_details(product_id):
+    product = Product.query.get(product_id)
+    if product:
+        return jsonify({
+            'id': product.id,
+            'name': product.name,
+            'price': product.price,
+            'description': product.description
+        })
+
+    return jsonify({'message': 'Product not found'}), 404
+
+# update product
+
+
+@app.route('/api/products/update/<int:product_id>', methods=['PUT'])
+def update_product(product_id):
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({'message': 'Product not found'}), 404
+
+    data = request.json
+    if ('name' in data):
+        product.name = data['name']
+    if ('price' in data):
+        product.price = data['price']
+    if ('description' in data):
+        product.description = data['description']
+
     db.session.commit()
-    return  { "message" : "Product deleted successfully" }
+    return jsonify({'message': 'Product updated successfully'})
 
-  return jsonify({ "message": "Product not found" }), 404
+# list products
 
-@app.route("/")
+
+@app.route('/api/products', methods=['GET'])
+def get_products():
+    products = Product.query.all()
+    product_list = []
+    for product in products:
+        product_list.append({
+            'id': product.id,
+            'name': product.name,
+            'price': product.price,
+            'description': product.description
+        })
+
+    return jsonify(product_list)
+
+
+@app.route('/')
 def hello_world():
-  return "Hello World!"
+    return 'Hello World!'
 
 
-if __name__ == "__main__":
-  app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)
